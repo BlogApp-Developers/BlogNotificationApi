@@ -1,5 +1,6 @@
 using BlogNotificationApi.Data;
 using BlogNotificationApi.Hubs;
+using BlogNotificationApi.Methods;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
+builder.Services.AddTransient<TokenValidation>();
 
 builder.Services.AddDbContext<NotificationsDbContext>(options =>
     {var connectionString = builder.Configuration.GetConnectionString("PostgreSqlDev");
