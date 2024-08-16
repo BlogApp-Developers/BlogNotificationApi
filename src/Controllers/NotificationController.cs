@@ -28,8 +28,8 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            base.HttpContext.Request.Headers.TryGetValue("Bearer", out StringValues headerValues);
-            var tokenNew = headerValues.FirstOrDefault();
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
             this.tokenValidation.ValidateToken(tokenNew);
         }
         catch (Exception ex)
@@ -48,7 +48,8 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var tokenNew = base.HttpContext.Request.Headers["Bearer"][0];
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
             this.tokenValidation.ValidateToken(tokenNew);
         }
         catch (Exception ex)
@@ -66,7 +67,8 @@ public class NotificationsController : ControllerBase
     {
         try
         {
-            var tokenNew = base.HttpContext.Request.Headers["Bearer"][0];
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
             this.tokenValidation.ValidateToken(tokenNew);
         }
         catch (Exception ex)
