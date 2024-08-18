@@ -23,7 +23,7 @@ public class NotificationsController : ControllerBase
         this.tokenValidation = tokenValidation;
     }
 
-    [HttpGet("{userId}")]
+    [HttpGet("api/[controller]/[action]/{userId}")]
     public async Task<ActionResult<IEnumerable<Notification>>> GetUserNotifications(Guid userId)
     {
         try
@@ -60,6 +60,32 @@ public class NotificationsController : ControllerBase
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
+    }
+
+    [HttpDelete("api/[controller]/[action]")]
+    public async Task<IActionResult> DeleteNotification(Guid id)
+    {
+        try
+        {
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
+            this.tokenValidation.ValidateToken(tokenNew);
+        }
+        catch (Exception ex)
+        {
+            return base.Unauthorized(ex.Message);
+        }
+
+        var notification = this.dbContext.Notifications.FirstOrDefault(n => n.Id == id);
+
+        if (notification == null)
+        {
+            return base.NotFound();
+        }
+
+        this.dbContext.Notifications.Remove(notification);
+        await this.dbContext.SaveChangesAsync();
+        return base.StatusCode(204);
     }
 
     [HttpPut("{id}")]
