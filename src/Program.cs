@@ -1,4 +1,5 @@
 using BlogNotificationApi.Data;
+using BlogNotificationApi.Extensions.ServiceCollectionExtensions;
 using BlogNotificationApi.Hubs;
 using BlogNotificationApi.Methods;
 using Microsoft.EntityFrameworkCore;
@@ -6,9 +7,13 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddTransient<TokenValidation>();
+builder.Services.AddControllers();
+builder.Services.InitSwagger();
+builder.Services.InitCors();
+builder.Services.InitAuth(builder.Configuration);
+builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddDbContext<NotificationsDbContext>(options =>
     {var connectionString = builder.Configuration.GetConnectionString("PostgreSqlDev");
@@ -16,6 +21,7 @@ builder.Services.AddDbContext<NotificationsDbContext>(options =>
 
 var app = builder.Build();
 
+app.MapControllers();
 app.MapHub<NotificationsHub>("/NotificationsHub");
 
 if (app.Environment.IsDevelopment())
@@ -23,5 +29,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("BlazorTestPolicy");
 
 app.Run();

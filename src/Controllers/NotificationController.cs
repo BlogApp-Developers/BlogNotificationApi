@@ -43,7 +43,7 @@ public class NotificationsController : ControllerBase
             .ToListAsync();
     }
 
-    [HttpPost]
+    [HttpPost("api/[controller]/[action]")]
     public async Task<ActionResult<Notification>> CreateNotification(Notification notification)
     {
         try
