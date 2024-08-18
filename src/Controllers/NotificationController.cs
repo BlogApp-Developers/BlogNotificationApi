@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authorization;
 using BlogNotificationApi.Methods;
 using Microsoft.Extensions.Primitives;
+using BlogNotificationApi.Options;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -16,11 +19,13 @@ public class NotificationController : ControllerBase
 {
     private readonly NotificationsDbContext dbContext;
     private readonly TokenValidation tokenValidation;
+    private readonly EmailOptions emailOptions;
 
-    public NotificationController(NotificationsDbContext dbContext, TokenValidation tokenValidation)
+    public NotificationController(NotificationsDbContext dbContext, TokenValidation tokenValidation, IOptionsMonitor<EmailOptions> emailOptions)
     {
         this.dbContext = dbContext;
         this.tokenValidation = tokenValidation;
+        this.emailOptions = emailOptions.CurrentValue;
     }
 
     [HttpGet("api/[controller]/[action]/{userId}")]
@@ -61,6 +66,23 @@ public class NotificationController : ControllerBase
         await this.dbContext.SaveChangesAsync();
         var message = $"{notification.Message}! You can check your notifications following this link: http://localhost:5234/Notifications";
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
+    }
+
+    [HttpPut("api/[controller]/[action]")]
+    public async Task<IActionResult> ChangeEmailSend(bool value)
+    {
+        var filePath = Path.Combine("./", "appSettings.Development.json");
+        string json = System.IO.File.ReadAllText(filePath);
+        IList<JToken> jsonObj = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+        var sectionPath = "ToSend";
+
+        jsonObj.FirstOrDefault(t => t.Path == sectionPath).Remove();
+        jsonObj.Last().AddAfterSelf(new JProperty(sectionPath, value));
+
+        string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
+        System.IO.File.WriteAllText(filePath, output);
+
+        return base.Ok();
     }
 
     [HttpDelete("api/[controller]/[action]")]
