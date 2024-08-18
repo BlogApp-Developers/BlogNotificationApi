@@ -12,12 +12,12 @@ using Microsoft.Extensions.Primitives;
 
 [Route("api/[controller]")]
 [ApiController]
-public class NotificationsController : ControllerBase
+public class NotificationController : ControllerBase
 {
     private readonly NotificationsDbContext dbContext;
     private readonly TokenValidation tokenValidation;
 
-    public NotificationsController(NotificationsDbContext dbContext, TokenValidation tokenValidation)
+    public NotificationController(NotificationsDbContext dbContext, TokenValidation tokenValidation)
     {
         this.dbContext = dbContext;
         this.tokenValidation = tokenValidation;
@@ -59,6 +59,8 @@ public class NotificationsController : ControllerBase
 
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
+        var notificationLink = Url.Action("GetUserNotifications", "Notification", null, Request.Scheme);
+        var message = $"{notification.Message}! You can check your notifications following this link: http://localhost:5234/Notifications";
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
     }
 
