@@ -12,6 +12,8 @@ using Microsoft.Extensions.Primitives;
 using BlogNotificationApi.Options;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
+using BlogNotificationApi.Verification.Base;
+using BlogNotificationApi.User.Repositories.Base;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -20,12 +22,16 @@ public class NotificationController : ControllerBase
     private readonly NotificationsDbContext dbContext;
     private readonly TokenValidation tokenValidation;
     private readonly EmailOptions emailOptions;
+    private readonly IEmailService emailService;
+    private readonly IUserRepository userRepository;
 
-    public NotificationController(NotificationsDbContext dbContext, TokenValidation tokenValidation, IOptionsMonitor<EmailOptions> emailOptions)
+    public NotificationController(NotificationsDbContext dbContext, TokenValidation tokenValidation, IOptionsMonitor<EmailOptions> emailOptions, IEmailService emailService, IUserRepository userRepository)
     {
         this.dbContext = dbContext;
         this.tokenValidation = tokenValidation;
         this.emailOptions = emailOptions.CurrentValue;
+        this.emailService = emailService;
+        this.userRepository = userRepository;
     }
 
     [HttpGet("api/[controller]/[action]/{userId}")]
@@ -62,9 +68,14 @@ public class NotificationController : ControllerBase
             return Unauthorized(ex.Message);
         }
 
+        var user = await this.userRepository.GetByIdAsync(notification.UserId);
+
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
         var message = $"{notification.Message}! You can check your notifications following this link: http://localhost:5234/Notifications";
+        await emailService.SendEmailAsync(user.Email, "Confirm your login", message);
+
+
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
     }
 
