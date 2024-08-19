@@ -81,16 +81,23 @@ public class NotificationController : ControllerBase
     [HttpPut("api/[controller]/[action]")]
     public async Task<IActionResult> ChangeEmailSend(bool value)
     {
-        var filePath = Path.Combine("./", "appSettings.json");
-        string json = System.IO.File.ReadAllText(filePath);
-        IList<JToken> jsonObj = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
+        var filePathDev = "appsettings.Development.json";
+        var filePathProd = "appsettings.json";
+        string jsonDev = System.IO.File.ReadAllText(filePathDev);
+        string jsonProd = System.IO.File.ReadAllText(filePathProd);
+        IList<JToken> jsonObjDev = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonDev);
+        IList<JToken> jsonObjProd = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonProd);
         var sectionPath = "ToSend";
 
-        jsonObj.FirstOrDefault(t => t.Path == sectionPath).Remove();
-        jsonObj.Last().AddAfterSelf(new JProperty(sectionPath, value));
+        jsonObjDev.FirstOrDefault(t => t.Path == sectionPath).Remove();
+        jsonObjDev.Last().AddAfterSelf(new JProperty(sectionPath, value));
+        jsonObjProd.FirstOrDefault(t => t.Path == sectionPath).Remove();
+        jsonObjProd.Last().AddAfterSelf(new JProperty(sectionPath, value));
 
-        string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
-        System.IO.File.WriteAllText(filePath, output);
+        string outputDev = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObjDev, Newtonsoft.Json.Formatting.Indented);
+        string outputProd = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObjProd, Newtonsoft.Json.Formatting.Indented);
+        System.IO.File.WriteAllText(filePathDev, outputDev);
+        System.IO.File.WriteAllText(filePathProd, outputProd);
 
         return base.Ok();
     }
