@@ -1,8 +1,8 @@
-namespace BlogNotificationApi.Verification;
+namespace BlogNotificationApi.Services;
 
 using System.Net;
 using System.Net.Mail;
-using BlogNotificationApi.Verification.Base;
+using BlogNotificationApi.Services.Base;
 
 public class EmailService : IEmailService
 {

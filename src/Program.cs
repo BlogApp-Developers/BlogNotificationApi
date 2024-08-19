@@ -2,6 +2,8 @@ using BlogNotificationApi.Data;
 using BlogNotificationApi.Extensions.ServiceCollectionExtensions;
 using BlogNotificationApi.Hubs;
 using BlogNotificationApi.Methods;
+using BlogNotificationApi.Services;
+using BlogNotificationApi.Services.Base;
 using BlogNotificationApi.User.Repositories;
 using BlogNotificationApi.User.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +19,7 @@ builder.Services.InitCors();
 builder.Services.InitAuth(builder.Configuration);
 builder.Services.AddEndpointsApiExplorer();
 
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddTransient<IUserRepository, UserDapperRepository>();
 
 builder.Services.AddDbContext<NotificationsDbContext>(options =>

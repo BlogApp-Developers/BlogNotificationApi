@@ -6,13 +6,12 @@ using BlogNotificationApi.Data;
 using Microsoft.AspNetCore.Components;
 using BlogNotificationApi.Notification.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using BlogNotificationApi.Methods;
 using Microsoft.Extensions.Primitives;
 using BlogNotificationApi.Options;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
-using BlogNotificationApi.Verification.Base;
+using BlogNotificationApi.Services.Base;
 using BlogNotificationApi.User.Repositories.Base;
 
 [Route("api/[controller]")]
@@ -57,22 +56,22 @@ public class NotificationController : ControllerBase
     [HttpPost("api/[controller]/[action]")]
     public async Task<ActionResult<Notification>> CreateNotification(Notification notification)
     {
-        try
-        {
-            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
-            var tokenNew = headerValues.FirstOrDefault().Substring(7);
-            this.tokenValidation.ValidateToken(tokenNew);
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(ex.Message);
-        }
+        // try
+        // {
+        //     base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+        //     var tokenNew = headerValues.FirstOrDefault().Substring(7);
+        //     this.tokenValidation.ValidateToken(tokenNew);
+        // }
+        // catch (Exception ex)
+        // {
+        //     return Unauthorized(ex.Message);
+        // }
 
         var user = await this.userRepository.GetByIdAsync(notification.UserId);
 
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
-        var message = $"{notification.Message}! You can check your notifications following this link: http://localhost:5234/Notifications";
+        var message = $"{notification.Message}! You can check your notifications following this link: http://20.218.137.196/Notifications";
         await emailService.SendEmailAsync(user.Email, "New Notification!", message);
 
 
