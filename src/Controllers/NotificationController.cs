@@ -73,7 +73,7 @@ public class NotificationController : ControllerBase
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
         var message = $"{notification.Message}! You can check your notifications following this link: http://localhost:5234/Notifications";
-        await emailService.SendEmailAsync(user.Email, "Confirm your login", message);
+        await emailService.SendEmailAsync(user.Email, "New Notification!", message);
 
 
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
@@ -82,7 +82,7 @@ public class NotificationController : ControllerBase
     [HttpPut("api/[controller]/[action]")]
     public async Task<IActionResult> ChangeEmailSend(bool value)
     {
-        var filePath = Path.Combine("./", "appSettings.Development.json");
+        var filePath = Path.Combine("./", "appSettings.json");
         string json = System.IO.File.ReadAllText(filePath);
         IList<JToken> jsonObj = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(json);
         var sectionPath = "ToSend";
