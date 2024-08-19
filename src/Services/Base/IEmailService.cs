@@ -1,4 +1,4 @@
-namespace BlogNotificationApi.Verification.Base;
+namespace BlogNotificationApi.Services.Base;
 
 public interface IEmailService
 {
