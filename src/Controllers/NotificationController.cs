@@ -10,12 +10,8 @@ using BlogNotificationApi.Methods;
 using Microsoft.Extensions.Primitives;
 using BlogNotificationApi.Options;
 using Microsoft.Extensions.Options;
-using BlogNotificationApi.User.Models;
 using BlogNotificationApi.Services.Base;
 using BlogNotificationApi.User.Repositories.Base;
-using Microsoft.AspNetCore.Identity;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -78,7 +74,7 @@ public class NotificationController : ControllerBase
 
         if (user.SendEmail)
         {
-            var message = $"{notification.Message}! You can check your notifications following this link: http://20.218.137.196/Notifications";
+            var message = $"{notification.Message}! You can check your notifications following this link: http://74.234.52.131:5234/Notifications";
             await emailService.SendEmailAsync(user.Email, "New Notification!", message);
         }
 
