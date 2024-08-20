@@ -74,7 +74,7 @@ public class NotificationController : ControllerBase
 
         if (user.SendEmail)
         {
-            var message = $"{notification.Message}! You can check your notifications following this link: http://74.234.52.131:5234/Notifications";
+            var message = $"{notification.Message}! You can check your notifications following this link: http://20.218.147.124:5234/Notifications";
             await emailService.SendEmailAsync(user.Email, "New Notification!", message);
         }
 
