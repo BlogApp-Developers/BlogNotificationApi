@@ -10,9 +10,12 @@ using BlogNotificationApi.Methods;
 using Microsoft.Extensions.Primitives;
 using BlogNotificationApi.Options;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
+using BlogNotificationApi.User.Models;
 using BlogNotificationApi.Services.Base;
 using BlogNotificationApi.User.Repositories.Base;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using System.IdentityModel.Tokens.Jwt;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -56,50 +59,58 @@ public class NotificationController : ControllerBase
     [HttpPost("api/[controller]/[action]")]
     public async Task<ActionResult<Notification>> CreateNotification(Notification notification)
     {
-        // try
-        // {
-        //     base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
-        //     var tokenNew = headerValues.FirstOrDefault().Substring(7);
-        //     this.tokenValidation.ValidateToken(tokenNew);
-        // }
-        // catch (Exception ex)
-        // {
-        //     return Unauthorized(ex.Message);
-        // }
+        try
+        {
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
+            this.tokenValidation.ValidateToken(tokenNew);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+
 
         var user = await this.userRepository.GetByIdAsync(notification.UserId);
 
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
-        var message = $"{notification.Message}! You can check your notifications following this link: http://20.218.137.196/Notifications";
-        await emailService.SendEmailAsync(user.Email, "New Notification!", message);
+
+        if (user.SendEmail)
+        {
+            var message = $"{notification.Message}! You can check your notifications following this link: http://20.218.137.196/Notifications";
+            await emailService.SendEmailAsync(user.Email, "New Notification!", message);
+        }
 
 
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
     }
 
     [HttpPut("api/[controller]/[action]")]
-    public async Task<IActionResult> ChangeEmailSend(bool value)
+    public async Task<IActionResult> ChangeEmailSend(bool toSend)
     {
-        var filePathDev = "appsettings.Development.json";
-        var filePathProd = "appsettings.json";
-        string jsonDev = System.IO.File.ReadAllText(filePathDev);
-        string jsonProd = System.IO.File.ReadAllText(filePathProd);
-        IList<JToken> jsonObjDev = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonDev);
-        IList<JToken> jsonObjProd = (IList<JToken>)Newtonsoft.Json.JsonConvert.DeserializeObject(jsonProd);
-        var sectionPath = "ToSend";
+        string email;
+        try
+        {
+            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
+            var tokenNew = headerValues.FirstOrDefault().Substring(7);
+            email = this.tokenValidation.ValidateToken(tokenNew);
+        }
+        catch (Exception ex)
+        {
+            return Unauthorized(ex.Message);
+        }
 
-        jsonObjDev.FirstOrDefault(t => t.Path == sectionPath).Remove();
-        jsonObjDev.Last().AddAfterSelf(new JProperty(sectionPath, value));
-        jsonObjProd.FirstOrDefault(t => t.Path == sectionPath).Remove();
-        jsonObjProd.Last().AddAfterSelf(new JProperty(sectionPath, value));
+        try
+        {
+            await this.userRepository.UpdateAsync(email, toSend);
+        }
+        catch (Exception ex)
+        {
+            return base.BadRequest(ex.Message);
+        }
 
-        string outputDev = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObjDev, Newtonsoft.Json.Formatting.Indented);
-        string outputProd = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObjProd, Newtonsoft.Json.Formatting.Indented);
-        System.IO.File.WriteAllText(filePathDev, outputDev);
-        System.IO.File.WriteAllText(filePathProd, outputProd);
-
-        return base.Ok();
+        return base.NoContent();
     }
 
     [HttpDelete("api/[controller]/[action]")]

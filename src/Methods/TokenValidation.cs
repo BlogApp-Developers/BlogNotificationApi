@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Principal;
 using BlogNotificationApi.Options;
 using Microsoft.Extensions.Options;
@@ -14,14 +15,15 @@ public class TokenValidation
     {
         this.jwtOptions = jwtOptionsSnapshot.Value;
     }
-    public bool ValidateToken(string authToken)
+    public string ValidateToken(string authToken)
     {
         var tokenHandler = new JwtSecurityTokenHandler();
         var validationParameters = GetValidationParameters();
 
         SecurityToken validatedToken;
         IPrincipal principal = tokenHandler.ValidateToken(authToken, validationParameters, out validatedToken);
-        return true;
+        var jwtSecurityToken = tokenHandler.ReadJwtToken(authToken);
+        return jwtSecurityToken.Claims.FirstOrDefault(t => t.Type == ClaimTypes.Email).Value;
     }
 
     public TokenValidationParameters GetValidationParameters()
