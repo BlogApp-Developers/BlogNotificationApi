@@ -11,5 +11,6 @@ public class Notification
     public string? Type { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? UserName { get; set; }
+    public string? BlogAvatar { get; set; }
     public bool IsRead { get; set; } = false;
 }
