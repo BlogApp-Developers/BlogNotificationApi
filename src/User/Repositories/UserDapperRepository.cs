@@ -17,7 +17,7 @@ public class UserDapperRepository : IUserRepository
     {
         using var connection = new NpgsqlConnection(this.connectionString);
 
-        var user = await connection.QueryFirstAsync<User>("Select \"Email\" From public.\"AspNetUsers\" WHERE public.\"AspNetUsers\".\"Id\" = @Id", new { Id = id });
+        var user = await connection.QueryFirstAsync<User>("Select * From public.\"AspNetUsers\" WHERE public.\"AspNetUsers\".\"Id\" = @Id", new { Id = id });
 
         return user;
     }
