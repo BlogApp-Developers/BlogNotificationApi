@@ -72,7 +72,7 @@ public class NotificationController : ControllerBase
         this.dbContext.Notifications.Add(notification);
         await this.dbContext.SaveChangesAsync();
 
-        if (user.SendEmail)
+        if (user.SendEmail.Value)
         {
             var message = $"{notification.Message}! You can check your notifications following this link: http://20.123.43.245/Notifications";
             await emailService.SendEmailAsync(user.Email, "New Notification!", message);
