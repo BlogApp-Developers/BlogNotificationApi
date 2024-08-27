@@ -82,33 +82,6 @@ public class NotificationController : ControllerBase
         return CreatedAtAction(nameof(GetUserNotifications), new { userId = notification.UserId }, notification);
     }
 
-    [HttpPut("api/[controller]/[action]")]
-    public async Task<IActionResult> ChangeEmailSend(bool toSend)
-    {
-        string email;
-        try
-        {
-            base.HttpContext.Request.Headers.TryGetValue("Authorization", out StringValues headerValues);
-            var tokenNew = headerValues.FirstOrDefault().Substring(7);
-            email = this.tokenValidation.ValidateToken(tokenNew);
-        }
-        catch (Exception ex)
-        {
-            return Unauthorized(ex.Message);
-        }
-
-        try
-        {
-            await this.userRepository.UpdateAsync(email, toSend);
-        }
-        catch (Exception ex)
-        {
-            return base.BadRequest(ex.Message);
-        }
-
-        return base.NoContent();
-    }
-
     [HttpDelete("api/[controller]/[action]")]
     public async Task<IActionResult> DeleteNotification(Guid id)
     {
